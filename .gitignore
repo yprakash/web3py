@@ -1,0 +1,21 @@
+# Ignore Python cache and bytecode files
+__pycache__/
+*.pyc
+__pypackages__/
+
+# Ignore sensitive data files
+.env
+.env.*
+
+# Ignore IDE specific files (e.g., PyCharm, VSCode)
+.vscode/
+.idea/
+
+*.log
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Environments
+venv/

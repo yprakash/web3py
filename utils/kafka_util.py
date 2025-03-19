@@ -16,12 +16,22 @@ async def init_kafka(app_name):
     global _producer
     if not _producer:
         _producer = AIOKafkaProducer(
-            bootstrap_servers='kafka:9092',
+            # enable_idempotence=True,
+            bootstrap_servers='kafka:9092',  # get_env('KAFKA_BROKER', 'kafka:9092'),
             client_id=app_name + '-publisher',
-            acks='all'
+            acks='all',  # Ensures all replicas acknowledge the message
+            compression_type=get_env('PUBLISH_COMPRESS_TYPE', 'gzip'),  # Optional optimization: compress messages
+
+            # Batch size in bytes (16 KB by default) allocated per partition
+            max_batch_size=get_env('PUBLISH_BATCH_SIZE', 32768),
+            # linger.ms Time to wait before sending a batch: we increase the chances of messages being sent
+            # together in a batch. And at the expense of this small delay, we can increase the throughput, compression,
+            # and efficiency of the producer. So overall, adding a small delay may actually increase the efficiency
+            linger_ms=get_env('PUBLISH_LINGER_MS', 20)
         )
         await _producer.start()
         logger.info('Connected Kafka cluster %s', _producer.client._bootstrap_servers)
+        # finally: await _producer.stop()
     return _producer
 
 async def send_and_wait(topic, key, value, ts=0):
